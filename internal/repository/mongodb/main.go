@@ -28,14 +28,13 @@ func NewClient(ctx context.Context, cfg *config.DbConf) repository.Storage {
 }
 
 func (c *cli) Stop(ctx context.Context) {
-	log.Println("stopping envorinments")
-
-	if c.s.db != nil {
-		if err := c.s.db.Disconnect(ctx); err != nil {
-			log.Printf("stopping db error: %s", err.Error())
-		} else {
-			log.Println("stopping db successfully")
-		}
+	if c.s.db == nil {
+		return
+	}
+	if err := c.s.db.Disconnect(ctx); err != nil {
+		log.Printf("mongodb: stopping error: %s", err.Error())
+	} else {
+		log.Println("mongodb: stopping successfully")
 	}
 }
 
