@@ -1,8 +1,8 @@
 package config
 
 import (
-	"errors"
 	"fmt"
+	"todolist/internal/domain"
 )
 
 type ServerConf struct {
@@ -11,12 +11,21 @@ type ServerConf struct {
 
 func (s *ServerConf) validate() error {
 	if s.Addr == "" {
-		return errors.New("server address is empty")
+		return domain.ErrSrvAddrEmpty
 	}
+	dg, dt :=0, 0
 	for i := 0; i < len(s.Addr); i++ {
-		if s.Addr[i] < 0 && s.Addr[i] > '9' || s.Addr[i] != ':' {
-			return errors.New("server address not valid")
+		if s.Addr[i] < 0 || s.Addr[i] > '9' {
+			if s.Addr[i] == ':' {
+				dt = i
+				continue
+			}
+			return domain.ErrSrvAddrNotValid
 		}
+		dg++
+	}
+	if dg == 0 || dt != 0 {
+		return domain.ErrSrvAddrNotValid
 	}
 	if s.Addr[0] != ':' {
 		s.Addr = fmt.Sprintf(":%s", s.Addr)
