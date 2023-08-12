@@ -5,6 +5,11 @@ import "github.com/labstack/echo/v4"
 
 type Handlers struct {
 	e *echo.Echo
+	//svc
+}
+
+func New(e *echo.Echo) *Handlers {
+	return &Handlers{e: e}
 }
 
 func (h *Handlers) CreateTask(c echo.Context) error {

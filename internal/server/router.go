@@ -4,24 +4,22 @@ import (
 	"todolist/internal/api"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
-type Server struct {
-	srv *echo.Echo
-}
+func newRouter(h *api.Handlers) *echo.Echo {
+	e:= echo.New()
 
-func New() *Server {
-	srv := Server{
-		srv: echo.New(),
-	}
-	return &srv
-}
+	// set middlewares
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
-func (s *Server) registerHandlers(h *api.Handlers)  {
-	g := s.srv.Group("/api/todo-list")
-	g.POST("/tasks",h.CreateTask)
-	g.PUT("/tasks/:id",h.UpdateTask)
-	g.DELETE("/tasks/:id",h.DeleteTask)
-	g.PUT("/tasks/:id/done",h.DoneTask)
-	g.GET("/tasks",h.GetTasks)
+	// register handlers
+	g := e.Group("/api/todo-list")
+	g.POST("/tasks", h.CreateTask)
+	g.PUT("/tasks/:id", h.UpdateTask)
+	g.DELETE("/tasks/:id", h.DeleteTask)
+	g.PUT("/tasks/:id/done", h.DoneTask)
+	g.GET("/tasks", h.GetTasks)
+	return e
 }
