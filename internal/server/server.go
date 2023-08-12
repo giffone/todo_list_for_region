@@ -18,7 +18,7 @@ type Server struct {
 	quit chan os.Signal
 	e    *echo.Echo
 	cfg  *config.ServerConf
-	env *env
+	env  *env
 }
 
 func New(h *api.Handlers) *Server {
@@ -33,7 +33,12 @@ func New(h *api.Handlers) *Server {
 
 func (s *Server) Run() {
 	// stop envs - mongodb etc.
-	defer s.env.Stop()
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		s.env.Stop(ctx)
+	}()
 
 	// start router
 	go func() {
@@ -41,12 +46,12 @@ func (s *Server) Run() {
 			log.Fatalf("Server start error: %s", err.Error())
 		}
 	}()
-	
-	// wait notifiers
+
+	// wait notifiers [ctrl-c]
 	<-s.quit
 	log.Println("stopping server")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5 *time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// stop router

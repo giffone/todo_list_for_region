@@ -3,6 +3,6 @@ package domain
 import "errors"
 
 var (
-	ErrSrvAddrEmpty    = errors.New("server address is empty")
-	ErrSrvAddrNotValid = errors.New("server address not valid")
+	ErrAddrEmpty    = errors.New("address is empty")
+	ErrAddrNotValid = errors.New("address not valid")
 )
