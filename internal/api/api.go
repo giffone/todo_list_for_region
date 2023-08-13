@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	CreateTask(task *domain.Task) error
+	CreateTask(task *domain.Request) error
 	UpdateTask() error
 	DeleteTask() error
 	DoneTask() error
@@ -30,7 +30,7 @@ func New(e *echo.Echo, svc Service) *Handlers {
 }
 
 func (h *Handlers) CreateTask(c echo.Context) error {
-	t := domain.Task{}
+	t := domain.Request{}
 	var err error
 	// parse data
 	if err = c.Bind(&t); err != nil {
