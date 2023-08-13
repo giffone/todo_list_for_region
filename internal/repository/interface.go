@@ -1,9 +1,12 @@
 package repository
 
-import "context"
+import (
+	"context"
+	"todolist/internal/domain"
+)
 
 type Db interface {
-	CreateTask() error
+	CreateTask(ctx context.Context, t *domain.TaskDTO) error
 	UpdateTask() error
 	DeleteTask() error
 	DoneTask() error

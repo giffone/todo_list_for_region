@@ -13,12 +13,12 @@ type service struct {
 
 func (s *service) CreateTask(r *domain.Request) error {
 	// make unique key
-	key:= fmt.Sprintf("%s%s", r.Title,r.ActiveAt)
+	key := fmt.Sprintf("%s%s", r.Title, r.ActiveAt)
 	// make model
 	t := domain.TaskDTO{
-		Title: r.Title,
+		Title:    r.Title,
 		ActiveAt: r.ValidDate,
-		HashKey: hashkey.MakeHashKey(key), // create unique hash for task
+		HashKey:  hashkey.MakeHashKey(key), // create unique hash for task
 	}
-	return s.db.CreateTask(t)
+	return s.db.CreateTask(&t)
 }

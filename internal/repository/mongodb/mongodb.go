@@ -1,18 +1,30 @@
 package mongodb
 
 import (
+	"context"
+	"todolist/internal/domain"
+
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+
+
 type storage struct {
-	db *mongo.Client
+	tasks *mongo.Collection
 }
 
 func NewDb(c *mongo.Client) *storage {
-	return &storage{db: c}
+	return &storage{tasks: c.Database(dbName).Collection(collectionT)}
 }
 
-func (s *storage) CreateTask() error {
+func (s *storage) CreateTask(ctx context.Context, t *domain.TaskDTO) error {
+	_, err := s.tasks.InsertOne(ctx, t)
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return domain.ErrAlreadyExist
+		}
+		return err
+	}
 	return nil
 }
 

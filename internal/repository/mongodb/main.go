@@ -10,10 +10,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const driver = "mongodb"
+const (
+	driver      = "mongodb"
+	dbName      = "to-do-list"
+	collectionT = "tasks"
+)
 
 type cli struct {
-	s *storage
+	db *mongo.Client
+	s  *storage
 }
 
 func NewClient(ctx context.Context, cfg *config.DbConf) repository.Storage {
@@ -28,10 +33,10 @@ func NewClient(ctx context.Context, cfg *config.DbConf) repository.Storage {
 }
 
 func (c *cli) Stop(ctx context.Context) {
-	if c.s.db == nil {
+	if c.db == nil {
 		return
 	}
-	if err := c.s.db.Disconnect(ctx); err != nil {
+	if err := c.db.Disconnect(ctx); err != nil {
 		log.Printf("mongodb: stopping error: %s", err.Error())
 	} else {
 		log.Println("mongodb: stopping successfully")
