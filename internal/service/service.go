@@ -46,6 +46,19 @@ func (s *service) UpdateTask(ctx context.Context, id string, r *domain.Request) 
 	return &domain.StatusOK
 }
 
+func (s *service) DeleteTask(ctx context.Context, id string) *domain.Response {
+	// delete
+	if err := s.db.DeleteTask(ctx, id); err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return &domain.StatusNotFound
+		}
+		res := domain.StatusIntSrvErr
+		res.WrapStatus(err.Error())
+		return &res
+	}
+	return &domain.StatusOK
+}
+
 func prepareDTO(r *domain.Request) *domain.TaskDTO {
 	// make unique key
 	key := fmt.Sprintf("%s%s", r.Title, r.ActiveAt)

@@ -10,7 +10,7 @@ import (
 type Service interface {
 	CreateTask(ctx context.Context, task *domain.Request) *domain.Response
 	UpdateTask(ctx context.Context, id string, r *domain.Request) *domain.Response
-	DeleteTask() error
+	DeleteTask(ctx context.Context, id string) *domain.Response
 	DoneTask() error
 	GetTasks() error
 }
