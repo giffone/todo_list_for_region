@@ -6,12 +6,12 @@ import (
 	"unicode/utf8"
 )
 
-type List struct {
+type Task struct {
 	Title    string    `json:"title"`
 	ActiveAt time.Time `json:"activeAt"`
 }
 
-func (l *List) Validate() error {
+func (l *Task) Validate() error {
 	if l.Title == "" {
 		return errors.New("Title must not be empty")
 	}

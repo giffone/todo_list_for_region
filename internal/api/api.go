@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"todolist/internal/domain"
@@ -8,30 +9,48 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Handlers struct {
-	e *echo.Echo
-	//svc
+type Service interface {
+	CreateTask(task *domain.Task) error
+	UpdateTask() error
+	DeleteTask() error
+	DoneTask() error
+	GetTasks() error
 }
 
-func New(e *echo.Echo) *Handlers {
-	return &Handlers{e: e}
+type Handlers struct {
+	e   *echo.Echo
+	svc Service
+}
+
+func New(e *echo.Echo, svc Service) *Handlers {
+	return &Handlers{
+		e:   e,
+		svc: svc,
+	}
 }
 
 func (h *Handlers) CreateTask(c echo.Context) error {
-	t := domain.List{}
+	t := domain.Task{}
 	var err error
-
+	// parse data
 	if err = c.Bind(&t); err != nil {
 		e := fmt.Sprintf("Invalid request body: %s", err.Error())
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": e})
+		return c.JSON(http.StatusBadRequest, map[string]string{"status": e})
 	}
+	// validate data
 	if err = t.Validate(); err != nil {
 		e := fmt.Sprintf("Invalid data: %s", err.Error())
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": e})
+		return c.JSON(http.StatusBadRequest, map[string]string{"status": e})
 	}
-	response := map[string]interface{}{}
-	// if already exist - 204
-	return c.JSON(http.StatusCreated, response)
+	// create task in db
+	err = h.svc.CreateTask(&t)
+	if err != nil {
+		if errors.Is(err, domain.ErrAlreadyExist) {
+			return c.JSON(http.StatusNoContent, map[string]string{"status": err.Error()})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{"status": err.Error()})
+	}
+	return c.JSON(http.StatusCreated, map[string]string{"status": "ok"})
 }
 
 func (h *Handlers) UpdateTask(c echo.Context) error {

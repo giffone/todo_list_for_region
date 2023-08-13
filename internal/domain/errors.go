@@ -3,6 +3,7 @@ package domain
 import "errors"
 
 var (
-	ErrAddrEmpty    = errors.New("address is empty")
-	ErrAddrNotValid = errors.New("address not valid")
+	ErrAlreadyExist = errors.New("Task already exist")
+	ErrAddrEmpty    = errors.New("Address is empty")
+	ErrAddrNotValid = errors.New("Address not valid")
 )
