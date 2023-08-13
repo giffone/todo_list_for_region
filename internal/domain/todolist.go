@@ -9,6 +9,7 @@ import (
 type Task struct {
 	Title    string    `json:"title"`
 	ActiveAt time.Time `json:"activeAt"`
+	HashKey  string    `json:"hash"`
 }
 
 func (l *Task) Validate() error {
