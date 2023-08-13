@@ -74,7 +74,17 @@ func (h *Handlers) UpdateTask(c echo.Context) error {
 }
 
 func (h *Handlers) DeleteTask(c echo.Context) error {
-	return nil
+	// parse data from req
+	id := c.Param("id")
+	// validate data
+	if id == "" {
+		res := domain.StatusInvalidData
+		res.WrapStatus("Not valid id")
+		return c.JSON(res.Code, res)
+	}
+	// delete task in db
+	res := h.svc.DeleteTask(c.Request().Context(), id)
+	return c.JSON(res.Code, res)
 }
 
 func (h *Handlers) DoneTask(c echo.Context) error {
