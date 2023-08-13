@@ -27,8 +27,3 @@ func (r *Request) Validate() error {
 	return nil
 }
 
-type TaskDTO struct {
-	Title    string    `bson:"title"`
-	ActiveAt time.Time `bson:"activeAt"`
-	HashKey  string    `bson:"hash"`
-}
