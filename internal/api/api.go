@@ -11,7 +11,7 @@ type Service interface {
 	CreateTask(ctx context.Context, task *domain.Request) *domain.Response
 	UpdateTask(ctx context.Context, id string, r *domain.Request) *domain.Response
 	DeleteTask(ctx context.Context, id string) *domain.Response
-	DoneTask() error
+	DoneTask(ctx context.Context, id string) *domain.Response
 	GetTasks() error
 }
 
@@ -88,7 +88,17 @@ func (h *Handlers) DeleteTask(c echo.Context) error {
 }
 
 func (h *Handlers) DoneTask(c echo.Context) error {
-	return nil
+	// parse data from req
+	id := c.Param("id")
+	// validate data
+	if id == "" {
+		res := domain.StatusInvalidData
+		res.WrapStatus("Not valid id")
+		return c.JSON(res.Code, res)
+	}
+	// update task in db
+	res := h.svc.DoneTask(c.Request().Context(), id)
+	return c.JSON(res.Code, res)
 }
 
 func (h *Handlers) GetTasks(c echo.Context) error {

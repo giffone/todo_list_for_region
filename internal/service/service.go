@@ -59,6 +59,19 @@ func (s *service) DeleteTask(ctx context.Context, id string) *domain.Response {
 	return &domain.StatusOK
 }
 
+func (s *service) DoneTask(ctx context.Context, id string) *domain.Response {
+	// update
+	if err := s.db.DoneTask(ctx, id); err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return &domain.StatusNotFound
+		}
+		res := domain.StatusIntSrvErr
+		res.WrapStatus(err.Error())
+		return &res
+	}
+	return &domain.StatusOK
+}
+
 func prepareDTO(r *domain.Request) *domain.TaskDTO {
 	// make unique key
 	key := fmt.Sprintf("%s%s", r.Title, r.ActiveAt)
@@ -66,6 +79,7 @@ func prepareDTO(r *domain.Request) *domain.TaskDTO {
 	return &domain.TaskDTO{
 		Title:    r.Title,
 		ActiveAt: r.ValidDate,
+		Status:   domain.StatusActive,
 		HashKey:  hashkey.MakeHashKey(key), // create unique hash for task
 	}
 }

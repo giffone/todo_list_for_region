@@ -7,14 +7,19 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
+	// fields
 	idField       = "id"
 	titleField    = "title"
 	activeAtField = "activeAt"
 	statusField   = "status"
 	hashField     = "hash"
+	// sort
+	asc  = 1
+	desc = -1
 )
 
 type storage struct {
@@ -48,7 +53,8 @@ func (s *storage) UpdateTask(ctx context.Context, id string, t *domain.TaskDTO) 
 		"$set": bson.M{
 			titleField:    t.Title,
 			activeAtField: t.ActiveAt,
-			hashField:     t.HashKey,
+			// statusField:   t.Status.String(),
+			hashField: t.HashKey,
 		},
 	}
 	// update
@@ -87,7 +93,7 @@ func (s *storage) DoneTask(ctx context.Context, id string) error {
 
 	// prepare
 	filter := bson.M{idField: id}
-	update := bson.M{"$set": bson.M{statusField: true}}
+	update := bson.M{"$set": bson.M{statusField: domain.StatusDone.String()}}
 	// update
 	result, err := s.tasks.UpdateOne(ctx, filter, update)
 	if err != nil {
@@ -100,6 +106,53 @@ func (s *storage) DoneTask(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *storage) GetTasks() error {
-	return nil
+func (s *storage) GetTasks(ctx context.Context, status string) ([]domain.Task, error) {
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+
+	// prepare
+	var filter bson.M
+	if status == domain.StatusDone.String() {
+		filter = bson.M{statusField: status}
+	} else {
+		filter = bson.M{
+			statusField:   status,
+			activeAtField: bson.M{"$lte": time.Now()},
+		}
+	}
+	// count tasks
+	count, err := s.tasks.CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if count == 0 {
+		return nil, domain.ErrNotFound
+	}
+
+	// sort
+	opt := options.Find()
+	opt.SetSort(bson.M{activeAtField: asc})
+
+	// get task list
+	cur, err := s.tasks.Find(ctx, filter, opt)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	tasksList := make([]domain.Task, 0, count)
+	// iterate and read
+	for cur.Next(ctx) {
+		var task domain.Task
+		if err := cur.Decode(&task); err != nil {
+			return nil, err
+		}
+		tasksList = append(tasksList, task)
+	}
+
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+	return tasksList, nil
 }

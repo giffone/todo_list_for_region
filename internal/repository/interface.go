@@ -10,7 +10,7 @@ type Db interface {
 	UpdateTask(ctx context.Context, id string, t *domain.TaskDTO) error
 	DeleteTask(ctx context.Context, id string) error
 	DoneTask(ctx context.Context, id string) error
-	GetTasks() error
+	GetTasks(ctx context.Context, status string) ([]domain.Task, error)
 }
 
 type Storage interface {
