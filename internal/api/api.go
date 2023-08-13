@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"todolist/internal/domain"
-	"todolist/pkg/hashkey"
 
 	"github.com/labstack/echo/v4"
 )
@@ -43,8 +42,6 @@ func (h *Handlers) CreateTask(c echo.Context) error {
 		e := fmt.Sprintf("Invalid data: %s", err.Error())
 		return c.JSON(http.StatusBadRequest, map[string]string{"status": e})
 	}
-	//create unique hash
-	t.HashKey = hashkey.MakeHashKey(t.Title, t.ActiveAt)
 	// create task in db
 	err = h.svc.CreateTask(&t)
 	if err != nil {
