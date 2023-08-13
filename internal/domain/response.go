@@ -27,9 +27,13 @@ func (r *Response) WrapStatus(str string) {
 }
 
 var (
+	StatusOK = Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+	}
 	StatusCreated = Response{
 		Code:   http.StatusCreated,
-		Status: "OK",
+		Status: "Created",
 	}
 	StatusIntSrvErr = Response{
 		Code:   http.StatusInternalServerError,
@@ -42,6 +46,10 @@ var (
 	StatusAlreadyExist = Response{
 		Code:   http.StatusNoContent,
 		Status: ErrAlreadyExist.Error(),
+	}
+	StatusNotFound = Response{
+		Code:   http.StatusNotFound,
+		Status: ErrNotFound.Error(),
 	}
 	StatusInvalidReqBody = Response{
 		Code:   http.StatusBadRequest,

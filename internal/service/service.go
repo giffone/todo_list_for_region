@@ -14,15 +14,10 @@ type service struct {
 }
 
 func (s *service) CreateTask(ctx context.Context, r *domain.Request) *domain.Response {
-	// make unique key
-	key := fmt.Sprintf("%s%s", r.Title, r.ActiveAt)
-	// make model
-	t := domain.TaskDTO{
-		Title:    r.Title,
-		ActiveAt: r.ValidDate,
-		HashKey:  hashkey.MakeHashKey(key), // create unique hash for task
-	}
-	if err := s.db.CreateTask(ctx, &t); err != nil {
+	// prepare model for db
+	t := prepareDTO(r)
+	// create
+	if err := s.db.CreateTask(ctx, t); err != nil {
 		if errors.Is(err, domain.ErrAlreadyExist) {
 			return &domain.StatusAlreadyExist
 		}
@@ -34,4 +29,30 @@ func (s *service) CreateTask(ctx context.Context, r *domain.Request) *domain.Res
 		return &res
 	}
 	return &domain.StatusCreated
+}
+
+func (s *service) UpdateTask(ctx context.Context, id string, r *domain.Request) *domain.Response {
+	// prepare model for db
+	t := prepareDTO(r)
+	// update
+	if err := s.db.UpdateTask(ctx, id, t); err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return &domain.StatusNotFound
+		}
+		res := domain.StatusIntSrvErr
+		res.WrapStatus(err.Error())
+		return &res
+	}
+	return &domain.StatusOK
+}
+
+func prepareDTO(r *domain.Request) *domain.TaskDTO {
+	// make unique key
+	key := fmt.Sprintf("%s%s", r.Title, r.ActiveAt)
+	// make model
+	return &domain.TaskDTO{
+		Title:    r.Title,
+		ActiveAt: r.ValidDate,
+		HashKey:  hashkey.MakeHashKey(key), // create unique hash for task
+	}
 }
