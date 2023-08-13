@@ -19,6 +19,7 @@ type TaskDTO struct {
 }
 
 type Task struct {
+	ID       string    `bson:"id" json:"id"`
 	Title    string    `bson:"title" json:"title"`
 	ActiveAt time.Time `bson:"activeAt" json:"activeAt"`
 }

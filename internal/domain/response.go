@@ -26,6 +26,11 @@ func (r *Response) WrapStatus(str string) {
 	r.Status = fmt.Sprintf("%s: %s", r.Status, str)
 }
 
+type ResponseList struct {
+	Response Response `json:"response"`
+	List     []Task   `json:"list"`
+}
+
 var (
 	StatusOK = Response{
 		Code:   http.StatusOK,

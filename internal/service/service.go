@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 	"todolist/internal/domain"
 	"todolist/internal/repository"
 	"todolist/pkg/hashkey"
@@ -70,6 +71,27 @@ func (s *service) DoneTask(ctx context.Context, id string) *domain.Response {
 		return &res
 	}
 	return &domain.StatusOK
+}
+
+func (s *service) GetTasks(ctx context.Context, status string) *domain.ResponseList {
+	// get list
+	tasks, err := s.db.GetTasks(ctx, status); 
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return &domain.ResponseList{Response: domain.StatusNotFound} 
+		}
+		res := domain.ResponseList{Response: domain.StatusIntSrvErr}
+		res.Response.WrapStatus(err.Error())
+		return &res
+	}
+	// add weekend
+	for i:= 0; i<len(tasks);i++ {
+		w := tasks[i].ActiveAt.Weekday()
+		if w == time.Saturday || w == time.Sunday {
+			tasks[i].Title = fmt.Sprintf("ВЫХОДНОЙ - %s", tasks[i].Title)
+		}
+	}
+	return &domain.ResponseList{Response:domain.StatusOK, List: tasks}
 }
 
 func prepareDTO(r *domain.Request) *domain.TaskDTO {

@@ -12,7 +12,7 @@ type Service interface {
 	UpdateTask(ctx context.Context, id string, r *domain.Request) *domain.Response
 	DeleteTask(ctx context.Context, id string) *domain.Response
 	DoneTask(ctx context.Context, id string) *domain.Response
-	GetTasks() error
+	GetTasks(ctx context.Context, status string) *domain.ResponseList
 }
 
 type Handlers struct {

@@ -125,7 +125,7 @@ func (s *storage) GetTasks(ctx context.Context, status string) ([]domain.Task, e
 	if err != nil {
 		return nil, err
 	}
-
+	// if not found tasks
 	if count == 0 {
 		return nil, domain.ErrNotFound
 	}
@@ -150,6 +150,9 @@ func (s *storage) GetTasks(ctx context.Context, status string) ([]domain.Task, e
 		}
 		tasksList = append(tasksList, task)
 	}
+	// if err := cur.All(context.Background(), &tasksList); err != nil {
+	// 	return nil, err
+	// }
 
 	if err := cur.Err(); err != nil {
 		return nil, err
