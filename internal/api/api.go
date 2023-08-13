@@ -1,7 +1,12 @@
 package api
 
-import "github.com/labstack/echo/v4"
+import (
+	"fmt"
+	"net/http"
+	"todolist/internal/domain"
 
+	"github.com/labstack/echo/v4"
+)
 
 type Handlers struct {
 	e *echo.Echo
@@ -13,7 +18,20 @@ func New(e *echo.Echo) *Handlers {
 }
 
 func (h *Handlers) CreateTask(c echo.Context) error {
-	return nil
+	t := domain.List{}
+	var err error
+
+	if err = c.Bind(&t); err != nil {
+		e := fmt.Sprintf("Invalid request body: %s", err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": e})
+	}
+	if err = t.Validate(); err != nil {
+		e := fmt.Sprintf("Invalid data: %s", err.Error())
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": e})
+	}
+	response := map[string]interface{}{}
+	// if already exist - 204
+	return c.JSON(http.StatusCreated, response)
 }
 
 func (h *Handlers) UpdateTask(c echo.Context) error {
