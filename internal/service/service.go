@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"todolist/internal/domain"
 	"todolist/internal/repository"
@@ -11,7 +12,7 @@ type service struct {
 	db repository.Db
 }
 
-func (s *service) CreateTask(r *domain.Request) error {
+func (s *service) CreateTask(ctx context.Context, r *domain.Request) error {
 	// make unique key
 	key := fmt.Sprintf("%s%s", r.Title, r.ActiveAt)
 	// make model
@@ -20,5 +21,5 @@ func (s *service) CreateTask(r *domain.Request) error {
 		ActiveAt: r.ValidDate,
 		HashKey:  hashkey.MakeHashKey(key), // create unique hash for task
 	}
-	return s.db.CreateTask(&t)
+	return s.db.CreateTask(ctx, &t)
 }

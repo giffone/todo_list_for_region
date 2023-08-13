@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 )
 
 type Service interface {
-	CreateTask(task *domain.Request) error
+	CreateTask(ctx context.Context, task *domain.Request) error
 	UpdateTask() error
 	DeleteTask() error
 	DoneTask() error
@@ -43,7 +44,7 @@ func (h *Handlers) CreateTask(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"status": e})
 	}
 	// create task in db
-	err = h.svc.CreateTask(&t)
+	err = h.svc.CreateTask(c.Request().Context(), &t)
 	if err != nil {
 		if errors.Is(err, domain.ErrAlreadyExist) {
 			return c.JSON(http.StatusNoContent, map[string]string{"status": err.Error()})
