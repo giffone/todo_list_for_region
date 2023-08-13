@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	idField       = "id"
 	titleField    = "title"
 	activeAtField = "activeAt"
 	hashField     = "hash"
@@ -41,7 +42,7 @@ func (s *storage) UpdateTask(ctx context.Context, id string, t *domain.TaskDTO) 
 	defer cancel()
 
 	// prepare
-	filter := bson.M{"id": id}
+	filter := bson.M{idField: id}
 	update := bson.M{
 		"$set": bson.M{
 			titleField:    t.Title,
@@ -61,7 +62,21 @@ func (s *storage) UpdateTask(ctx context.Context, id string, t *domain.TaskDTO) 
 	return nil
 }
 
-func (s *storage) DeleteTask() error {
+func (s *storage) DeleteTask(ctx context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	// prepare
+	filter := bson.M{idField: id}
+	// delete
+	result, err := s.tasks.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return err
+	}
+	// check result
+	if result.DeletedCount == 0 {
+		return domain.ErrNotFound
+	}
 	return nil
 }
 
