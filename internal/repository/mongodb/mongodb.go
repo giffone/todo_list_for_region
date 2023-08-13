@@ -2,12 +2,11 @@ package mongodb
 
 import (
 	"context"
+	"time"
 	"todolist/internal/domain"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-
 
 type storage struct {
 	tasks *mongo.Collection
@@ -18,6 +17,8 @@ func NewDb(c *mongo.Client) *storage {
 }
 
 func (s *storage) CreateTask(ctx context.Context, t *domain.TaskDTO) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
 	_, err := s.tasks.InsertOne(ctx, t)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
