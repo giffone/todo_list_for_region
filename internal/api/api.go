@@ -9,7 +9,7 @@ import (
 
 type Service interface {
 	CreateTask(ctx context.Context, task *domain.Request) *domain.Response
-	UpdateTask() error
+	UpdateTask(ctx context.Context, id string, r *domain.Request) *domain.Response
 	DeleteTask() error
 	DoneTask() error
 	GetTasks() error
@@ -30,7 +30,7 @@ func New(e *echo.Echo, svc Service) *Handlers {
 func (h *Handlers) CreateTask(c echo.Context) error {
 	t := domain.Request{}
 	var err error
-	// parse data
+	// parse data from req
 	if err = c.Bind(&t); err != nil {
 		res := domain.StatusInvalidReqBody
 		res.WrapStatus(err.Error())
@@ -48,7 +48,29 @@ func (h *Handlers) CreateTask(c echo.Context) error {
 }
 
 func (h *Handlers) UpdateTask(c echo.Context) error {
-	return nil
+	t := domain.Request{}
+	var err error
+	// parse data from req
+	id := c.Param("id")
+	if err = c.Bind(&t); err != nil {
+		res := domain.StatusInvalidReqBody
+		res.WrapStatus(err.Error())
+		return c.JSON(res.Code, res)
+	}
+	// validate data
+	if id == "" {
+		res := domain.StatusInvalidData
+		res.WrapStatus("Not valid id")
+		return c.JSON(res.Code, res)
+	}
+	if err = t.Validate(); err != nil {
+		res := domain.StatusInvalidData
+		res.WrapStatus(err.Error())
+		return c.JSON(res.Code, res)
+	}
+	// update task in db
+	res := h.svc.UpdateTask(c.Request().Context(), id, &t)
+	return c.JSON(res.Code, res)
 }
 
 func (h *Handlers) DeleteTask(c echo.Context) error {
