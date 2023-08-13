@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrAlreadyExist = errors.New("Task already exist")
+	ErrNotFound     = errors.New("Task not found")
 	ErrAddrEmpty    = errors.New("Address is empty")
 	ErrAddrNotValid = errors.New("Address not valid")
 )
@@ -17,7 +18,7 @@ type Response struct {
 	Status string `json:"status"`
 }
 
-func (r *Response) WrapStatus(str string)  {
+func (r *Response) WrapStatus(str string) {
 	if r.Status == "" {
 		r.Status = str
 		return
