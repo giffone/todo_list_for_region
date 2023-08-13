@@ -13,6 +13,7 @@ const (
 	idField       = "id"
 	titleField    = "title"
 	activeAtField = "activeAt"
+	statusField   = "status"
 	hashField     = "hash"
 )
 
@@ -80,7 +81,22 @@ func (s *storage) DeleteTask(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *storage) DoneTask() error {
+func (s *storage) DoneTask(ctx context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	// prepare
+	filter := bson.M{idField: id}
+	update := bson.M{"$set": bson.M{statusField: true}}
+	// update
+	result, err := s.tasks.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	// check result
+	if result.ModifiedCount == 0 {
+		return domain.ErrNotFound
+	}
 	return nil
 }
 
