@@ -23,4 +23,5 @@ func newEnvorinment(cfg *config.DbConf) (*env, error) {
 func (e *env) Stop(ctx context.Context) {
 	log.Println("stopping envorinments")
 	e.storage.Stop(ctx)
+	// etc ...
 }

@@ -27,7 +27,7 @@ func New(h *api.Handlers) *Server {
 		e:    newRouter(h),
 	}
 	// register notifiers
-	signal.Notify(srv.quit, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(srv.quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	return &srv
 }
 
@@ -43,7 +43,8 @@ func (s *Server) Run() {
 	// start router
 	go func() {
 		if err := s.e.Start(s.cfg.Addr); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server start error: %s", err.Error())
+			log.Printf("server start error: %s\n", err.Error())
+			s.quit <- syscall.SIGQUIT
 		}
 	}()
 
@@ -51,12 +52,13 @@ func (s *Server) Run() {
 	<-s.quit
 	log.Println("stopping server")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// stop router
 	if err := s.e.Shutdown(ctx); err != nil {
-		log.Fatalf("server stopping error: %s", err.Error())
+		log.Printf("server stopping error: %s\n", err.Error())
+		return
 	}
 	log.Println("server stopped successfully")
 }
